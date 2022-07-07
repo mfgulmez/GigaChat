@@ -10,7 +10,7 @@ import javax.swing.text.*;
 public class Client{
 private String addr;
 private Socket s;
-
+//Declare the client socket and IP address of the server that client will connect to.
 private JFrame frame=new JFrame();
 private JLabel heading=new JLabel();
 private JTextPane messageArea=new JTextPane();
@@ -19,20 +19,20 @@ private JPanel inputPanel=new JPanel();
 private JButton imageButton=new JButton("Send Image");
 private JButton emojiButton = new JButton("😀");
 Icon errorIcon=UIManager.getIcon("OptionPane.errorIcon");
-
 StyledDocument doc=messageArea.getStyledDocument();
 Style style=messageArea.addStyle("", null);
-
+//Declare the components and style of texts.
 private String name;
 private BufferedReader in;
 private PrintWriter out;
-
+//Declare reader and writer for text stream.
 public Client() {
 	    name=JOptionPane.showInputDialog(null,"Enter your name:","GigaChat",JOptionPane.PLAIN_MESSAGE);
 		addr=JOptionPane.showInputDialog(null,"Enter the IP address:","GigaChat",JOptionPane.PLAIN_MESSAGE);
 			try {
 				InetAddress iA=InetAddress.getByName(addr);
 				s = new Socket (iA,9090);
+				//The client socket is connected to the server socket.
 			out = new PrintWriter(s.getOutputStream(),true);
 			in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 			out.println("--"+name+" has joined the chat--");
@@ -41,6 +41,7 @@ public Client() {
 				keyEvents();
 				CreateGui();
 				read();
+				//Read text stream coming from server and create GUI if socket is not empty.
 			}}
 			catch (UnknownHostException e) {
 			  System.out.println(e);
@@ -81,6 +82,7 @@ private void CreateGui() {
 	frame.add(pane,BorderLayout.CENTER);
 	frame.add(inputPanel,BorderLayout.SOUTH);
 	frame.setVisible(true);
+	//GUI components are initialized and located 
 }
 
 public void read() {
@@ -99,18 +101,21 @@ public void read() {
 				if(welcome==true) {
 					StyleConstants.setForeground(style,Color.magenta);
 					doc.insertString(doc.getLength(), msg+"\n", style);
+					//Style non-message stream
 				}
+				
 				else {
 					while(msg.charAt(i)!=':'&&i<msg.length()) {
 						name=name+msg.charAt(i);
 						i++;
 					}
+					//Separate the message stream from the text stream coming from the server.
 					msg=msg.substring(i,msg.length());
 				StyleConstants.setForeground(style,Color.blue);
 				doc.insertString(doc.getLength(), name, style);
 				StyleConstants.setForeground(style,Color.black);
 				doc.insertString(doc.getLength(), msg+"\n", style);}}
-			
+			//Style message stream.
          catch (BadLocationException e) {
 				e.printStackTrace();
 		 } 
@@ -142,6 +147,7 @@ public void keyEvents() {
 	    			messageInput.setText("");
     	    		messageInput.requestFocus();
 	    		}}
+			//A thread for message to sent to server if enter key released.
 	    	}});
 }
 
@@ -160,6 +166,7 @@ public void keyEvents() {
 	private JButton sleepy=new JButton("😴");
 	private JButton cool=new JButton("😎");
 	private JButton nervous=new JButton("😬");
+	//Emoji buttons are initialized.
 void actionEvents() {
 	imageButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -180,7 +187,6 @@ void actionEvents() {
 				selectframe.add(pic, BorderLayout.CENTER);
 				selectframe.add(send, BorderLayout.SOUTH);
 				selectframe.setVisible(true);
-				
 				send.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent a) {
 						try {
@@ -205,7 +211,8 @@ void actionEvents() {
 				
 			}
 			
-		}		
+		}
+		//Thread for sending images to server (needs collaboration).
 	});
 	emojiButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent b) {
@@ -232,6 +239,7 @@ void actionEvents() {
 			emojiFrame.add(p3,BorderLayout.SOUTH);
 			emojiFrame.add(p2,BorderLayout.CENTER);
 			emojiFrame.pack();
+			//Emoji buttons are located and packed in a frame.
 		}});
 	smile.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent c) {
@@ -277,6 +285,7 @@ void actionEvents() {
 		public void actionPerformed(ActionEvent c) {
 			out.println(name+":😬");
 		}
+		//A thread for sending emojis to server when button is clicked.
 	});
 }
 
