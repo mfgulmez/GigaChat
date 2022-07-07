@@ -3,11 +3,9 @@ import java.util.*;
 import java.io.*;
 import java.lang.Thread;
 public class Server{
-	
-	private InetAddress iA;
+    private InetAddress iA;
     private ServerSocket sS;
     private int port=9090;
-    
 public Server() {
 	System.out.println("trying to create Server");
 	try {
@@ -16,7 +14,7 @@ public Server() {
 		sS=new ServerSocket(port,30,iA);
 		sS.setSoTimeout(100000000);
 		System.out.println("--Server is created--");
-	
+	//Initialize the server socket and set its time to stay open in ms.
 	} catch (UnknownHostException e) {
 	} catch (IOException e) {
 	}	
@@ -32,6 +30,7 @@ public void startServer() {
 				    System.out.println("--new client is connected--");
 					ReadandSendThread rT=new ReadandSendThread(s,sockets);
 					rT.start();
+			//Accepting connections on client-side while reading message stream from them.
 		} catch (IOException e) {
 		}
 	}
@@ -62,11 +61,10 @@ class ReadandSendThread extends Thread{
 						out.println(msg);
 					}
 					System.out.println(msg);
-					
-					
 			}}}
 		 catch (IOException e) {
 			 System.out.println(e);
 		}
+		//A thread for receiving all of message stream from all of clients that are connected and distribute them to connected clients.
 	}
 }
