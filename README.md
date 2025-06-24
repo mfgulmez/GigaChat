@@ -1,4 +1,4 @@
-# GigaChat 💬
+# GigaChat
 
 GigaChat is a real-time chat application built in Java using Swing for the GUI and Java Sockets for network communication. It allows users to exchange text messages, emojis, and images in a group chat setting with a visually appealing and responsive interface.
 
@@ -22,3 +22,7 @@ GigaChat/
 ├── Message.java           # Unified message class for text/image
 ├── Type.java              # Enum to represent message type
 └── README.md              # Project documentation
+```
+
+## Visual Example
+![GigaChat-example](https://github.com/user-attachments/assets/7f00064f-c9e8-47c9-9938-b3405a43a52b)
