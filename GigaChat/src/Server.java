@@ -1,70 +1,84 @@
 import java.net.*;
 import java.util.*;
 import java.io.*;
-import java.lang.Thread;
+
+/**
+ * Server class for GigaChat application.
+ * 
+ * Listens for incoming client connections and spawns a thread (ReadandSendThread)
+ * to handle broadcasting text and image messages to all connected clients.
+*/
+
 public class Server{
-    private InetAddress iA;
     private ServerSocket sS;
     private int port=9090;
-public Server() {
-	System.out.println("trying to create Server");
-	try {
-		iA=InetAddress.getLocalHost();
-		System.out.println(iA);
-		sS=new ServerSocket(port,30,iA);
-		sS.setSoTimeout(100000000);
-		System.out.println("--Server is created--");
-	//Initialize the server socket and set its time to stay open in ms.
-	} catch (UnknownHostException e) {
-	} catch (IOException e) {
-	}	
-	
-	
-}
-public void startServer() {
-	List<Socket> sockets=new ArrayList<Socket>();
-	while(true) {
-		try {
-				    Socket s=sS.accept();
-					sockets.add(s);
-				    System.out.println("--new client is connected--");
-					ReadandSendThread rT=new ReadandSendThread(s,sockets);
-					rT.start();
-			//Accepting connections on client-side while reading message stream from them.
-		} catch (IOException e) {
-		}
-	}
-}
-public static void main(String[] args) {
-	Server server=new Server();
-	server.startServer();
-}
-}
-class ReadandSendThread extends Thread{
-	List<Socket>sockets;
-	private Socket socket;
-	private BufferedReader in;
-	private PrintWriter out;
-	ReadandSendThread(Socket s,List<Socket>sck){
-		socket=s;
-	    sockets=sck;
-	}
-	public void run() {
-		try {
-			if(socket.isConnected()) {
-				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String msg="";
-				while(msg!="over") {
-					msg=in.readLine();
-					for(int i=0;i<sockets.size();i++) {
-						out = new PrintWriter(sockets.get(i).getOutputStream(), true);
-						out.println(msg);
-					}
-					System.out.println(msg);
-			}}}
-		 catch (IOException e) {
-			 System.out.println(e);
-		}
-		//A thread for receiving all of message stream from all of clients that are connected and distribute them to connected clients.
-	}
+    private List<Socket> sockets;
+    private List<Message> history = new ArrayList<>();
+
+    /**
+     * Private constructor to create and initialize the server socket.
+    */
+
+    private Server() {
+        System.out.println("Attempt to create Server");
+        try {
+            InetAddress localIP = getLocalIPAddress();
+            sS = new ServerSocket(port, 30, localIP);
+            System.out.println("Server started at IP: " + localIP.getHostAddress());
+            sS.setSoTimeout(100000000);
+            System.out.println("--Server is created--");
+            sockets = Collections.synchronizedList(new ArrayList<>());
+        } 
+
+        catch (UnknownHostException e) {
+            System.out.println(e.getLocalizedMessage());
+        } 
+
+        catch (IOException e) {
+            System.out.println(e.getLocalizedMessage());
+        }	
+    }
+
+    /**
+     * Get the local IP address of socket by inspecting IP on 
+     * connection to Google's public DNS server (8.8.8.8/100002)
+     * @return
+     * @throws UnknownHostException
+     * @throws SocketException
+    */
+    
+    private InetAddress getLocalIPAddress() throws UnknownHostException, SocketException {
+        try (final DatagramSocket socket = new DatagramSocket()) {
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+            return InetAddress.getLocalHost().isLoopbackAddress() ? socket.getLocalAddress() : InetAddress.getLocalHost();
+        }
+    }
+
+    /**
+     * Starts listening for new client connections.
+     * For each client, a new controller thread is started.
+    */
+
+    private void startServer() {
+        while(true) {
+            try {
+                Socket s = sS.accept();
+                sockets.add(s);
+                System.out.println("--new client is connected--");
+                ControllerThread rT = new ControllerThread(s, sockets, history);
+                rT.start();  // Move sendHistory() into the thread
+            } catch (IOException e) {
+                System.err.println("Error accepting client: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Main method to run the server.
+    */
+
+    public static void main(String[] args) {
+        Server server=new Server();
+        server.startServer();
+    }
 }
